@@ -48,7 +48,21 @@ namespace MazeCSharpTest
             return "[WallInfo:x=" + x + " y=" + y + " hasWall=" + hasWall + " type=" + type + "]";
         }
     }
+    public class BlockWallInfo
+    {
+        public WallInfo info { get; private set; }
+        public WallType wallDirect { get; private set; }
+        public BlockWallInfo(WallInfo info, WallType wallDirect)
+        {
+            this.info = info;
+            this.wallDirect = wallDirect;
+        }
 
+        public override string ToString()
+        {
+            return "[BlockWallInfo:wallDirect=" + wallDirect + " info=" + info + "]";
+        }
+    }
     class Maze
     {
         public int _x { get; private set; }
@@ -86,7 +100,7 @@ namespace MazeCSharpTest
             }
 
             //创建迷宫
-
+            RandomPrim();
             //
 
             //跟新类型
@@ -134,39 +148,140 @@ namespace MazeCSharpTest
             //标记起点
             GetWallInfo(nTarX, nTarY).hasWall = false;
 
-            List<WallInfo> _neighWallInfo = new List<WallInfo>();
+            List<BlockWallInfo> neighBlockWallInfo = new List<BlockWallInfo>();
+            WallInfo tempWall = null;
 
             //记录邻墙
-            WallInfo wInfo = null;
-            wInfo = GetWallInfo(nTarX, nTarY + 1);//Up
-            if (wInfo != null)
+            if (nTarY < nHeightLimit)
             {
-                _neighWallInfo.Add(wInfo);
+                tempWall = GetWallInfo(nTarX, nTarY + 1);//Up
+                if (tempWall != null)
+                {
+                    neighBlockWallInfo.Add(new BlockWallInfo(tempWall, WallType.Up));
+                }
             }
-            wInfo = GetWallInfo(nTarX, nTarY - 1);//Down
-            if (wInfo != null)
+            if (nTarY > 1)
             {
-                _neighWallInfo.Add(wInfo);
+                tempWall = GetWallInfo(nTarX, nTarY - 1);//Down
+                if (tempWall != null)
+                {
+                    neighBlockWallInfo.Add(new BlockWallInfo(tempWall, WallType.Down));
+                }
             }
-            wInfo = GetWallInfo(nTarX + 1, nTarY);//Right
-            if (wInfo != null)
+            if (nTarX < nWidthLimit)
             {
-                _neighWallInfo.Add(wInfo);
+                tempWall = GetWallInfo(nTarX + 1, nTarY);//Right
+                if (tempWall != null)
+                {
+                    neighBlockWallInfo.Add(new BlockWallInfo(tempWall, WallType.Right));
+                }
             }
-            wInfo = GetWallInfo(nTarX - 1, nTarY);//Left
-            if (wInfo != null)
+            if (nTarX > 1)
             {
-                _neighWallInfo.Add(wInfo);
+                tempWall = GetWallInfo(nTarX - 1, nTarY);//Left
+                if (tempWall != null)
+                {
+                    neighBlockWallInfo.Add(new BlockWallInfo(tempWall, WallType.Left));
+                }
             }
 
             int nIndex = 0;
-            while (_neighWallInfo.Count > 0)
+            BlockWallInfo tempBlackWall = null;
+            WallInfo tempWall2 = null;
+            while (neighBlockWallInfo.Count > 0)
             {
                 //随机选择一面墙
-                nIndex = _rand.Next(_neighWallInfo.Count);
-                
-                //找出此墙对面的目标格
+                nIndex = _rand.Next(neighBlockWallInfo.Count);
 
+                //找出此墙对面的目标格
+                tempBlackWall = neighBlockWallInfo[nIndex];
+                switch (tempBlackWall.wallDirect)
+                {
+                    case WallType.Up:
+                        nTarX = tempBlackWall.info.x;
+                        nTarY = tempBlackWall.info.y + 1;
+                        break;
+                    case WallType.Down:
+                        nTarX = tempBlackWall.info.x;
+                        nTarY = tempBlackWall.info.y - 1;
+                        break;
+                    case WallType.Left:
+                        nTarX = tempBlackWall.info.x - 1;
+                        nTarY = tempBlackWall.info.y;
+                        break;
+                    case WallType.Right:
+                        nTarX = tempBlackWall.info.x + 1;
+                        nTarY = tempBlackWall.info.y;
+                        break;
+                }
+
+                tempWall = GetWallInfo(nTarX, nTarY);
+                if (tempWall != null && tempWall.hasWall)
+                {
+                    //连通目标格
+                    tempWall.hasWall = false;
+                    tempBlackWall.info.hasWall = false;
+
+                    //添加目标格的邻格
+                    if (nTarY > 1)//Down
+                    {
+                        tempWall = GetWallInfo(nTarX, nTarY - 1);
+                        if (tempWall != null && tempWall.hasWall)
+                        {
+                            tempWall2 = GetWallInfo(nTarX, nTarY - 2);
+                            if (tempWall2 != null && tempWall2.hasWall)
+                            {
+                                neighBlockWallInfo.Add(new BlockWallInfo(tempWall, WallType.Down));
+                            }
+                        }
+                    }
+
+                    if (nTarY < nHeightLimit)//Up
+                    {
+                        tempWall = GetWallInfo(nTarX, nTarY + 1);
+                        if (tempWall != null && tempWall.hasWall)
+                        {
+                            tempWall2 = GetWallInfo(nTarX, nTarY + 2);
+                            if (tempWall2 != null && tempWall.hasWall)
+                            {
+                                neighBlockWallInfo.Add(new BlockWallInfo(tempWall, WallType.Up));
+                            }
+                        }
+                    }
+
+                    if (nTarX < nWidthLimit)//Right
+                    {
+                        tempWall = GetWallInfo(nTarX + 1, nTarY);
+                        if (tempWall != null && tempWall.hasWall)
+                        {
+                            tempWall2 = GetWallInfo(nTarX + 2, nTarY);
+                            if (tempWall2 != null && tempWall2.hasWall)
+                            {
+                                neighBlockWallInfo.Add(new BlockWallInfo(tempWall, WallType.Right));
+                            }
+                        }
+                    }
+
+                    if (nTarX > 1)//Left
+                    {
+                        tempWall = GetWallInfo(nTarX - 1, nTarY);
+                        if (tempWall != null && tempWall.hasWall)
+                        {
+                            tempWall2 = GetWallInfo(nTarX - 2, nTarY);
+                            if (tempWall2 != null && tempWall2.hasWall)
+                            {
+                                neighBlockWallInfo.Add(new BlockWallInfo(tempWall, WallType.Left));
+                            }
+                        }
+                    }
+
+                }
+                //移除此墙
+                neighBlockWallInfo.RemoveAt(nIndex);
+
+                tempWall = null;
+                tempWall2 = null;
+                tempBlackWall = null;
             }
 
 
@@ -304,7 +419,7 @@ namespace MazeCSharpTest
         static void Main(string[] args)
         {
             Maze maze = new Maze();
-            maze.CreateWall(10, 20);
+            maze.CreateWall(10, 10);
 
             for (int y = maze._y - 1; y >= 0; y--)
             {
@@ -314,6 +429,8 @@ namespace MazeCSharpTest
                 }
                 Console.WriteLine();
             }
+            Console.WriteLine();
+
         }
     }
 }
