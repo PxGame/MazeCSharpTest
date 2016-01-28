@@ -773,9 +773,9 @@ namespace MazeCSharpTest
             int x, y;
             do
             {
-                Console.Write("请输入迷宫宽和高（空格分开）：");
+                Console.Write("请输入迷宫宽和高，可选是否显示结果及随机数种子\n（空格分开，例：3 3 true 1， 即3行3列显示迷宫路径且随机数种子为1）：");
                 string[] arg = Console.ReadLine().Split(' ');
-                if (arg.Length != 2)
+                if (arg.Length < 2)
                 {
                     Console.WriteLine("Arg error >length != 2");
                     continue;
@@ -791,28 +791,31 @@ namespace MazeCSharpTest
                     continue;
                 }
 
+                int seed = 0;
+                bool findPath = false;
+                if (arg.Length >= 3)
+                {
+                    if (!bool.TryParse(arg[2], out findPath))
+                    {
+                        Console.WriteLine("find 输入错误！例：true/false");
+                        continue;
+                    }
+                }
+                if (arg.Length == 4)
+                {
+                    if (!int.TryParse(arg[3], out seed))
+                    {
+                        Console.WriteLine("seed 输入错误！例：1");
+                        continue;
+                    }
+
+                }
+
                 stopwatch.Start();
-                maze.Create(x, y);
+                maze.Create(x, y, seed);
                 stopwatch.Stop();
                 double createTime = stopwatch.Elapsed.TotalMilliseconds;
                 stopwatch.Reset();
-
-                List<WallInfo> path = null;
-                stopwatch.Start();
-                path=maze.FindPath(maze[1,1], maze[maze._x - 2, maze._y - 2]);
-                stopwatch.Stop();
-                double findTime = stopwatch.Elapsed.TotalMilliseconds;
-                stopwatch.Reset();
-                if (path != null)
-                {
-                    foreach (var item in path)
-                    {
-                        item.flag = 1;
-                    }
-                }
-
-                string msg = String.Format("x = {0} y = {1} Create Time(ms) > {2} Find Time(ms) > {3}", x, y, createTime, findTime);
-                Console.WriteLine(msg);
 
                 for (int h = maze._y - 1; h >= 0; h--)
                 {
@@ -823,6 +826,38 @@ namespace MazeCSharpTest
                     Console.WriteLine();
                 }
                 Console.WriteLine();
+
+                double findTime = 0;
+                if (findPath)
+                {
+                    List<WallInfo> path = null;
+                    stopwatch.Start();
+                    path = maze.FindPath(maze[1, 1], maze[maze._x - 2, maze._y - 2]);
+                    stopwatch.Stop();
+                    findTime = stopwatch.Elapsed.TotalMilliseconds;
+                    stopwatch.Reset();
+                    if (path != null)
+                    {
+                        foreach (var item in path)
+                        {
+                            item.flag = 1;
+                        }
+                    }
+
+                    for (int h = maze._y - 1; h >= 0; h--)
+                    {
+                        for (int w = 0; w < maze._x; w++)
+                        {
+                            Console.Write(maze.SelectWall(w, h));
+                        }
+                        Console.WriteLine();
+                    }
+                    Console.WriteLine();
+                }
+
+                string msg = String.Format("x = {0} y = {1} seed = {2} Create Time(ms) > {3} Find Time(ms) > {4}", x, y, seed, createTime, findTime);
+                Console.WriteLine(msg);
+
             } while (true);
 
         }
