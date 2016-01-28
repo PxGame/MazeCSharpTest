@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using Random = System.Random;
+
 namespace MazeCSharpTest
 {
     public enum WallType
@@ -29,18 +28,22 @@ namespace MazeCSharpTest
 
         LeftUpRightDown = 15
     }
+
     public class WallInfo
     {
         public int x = -1;
         public int y = -1;
+
         /// <summary>
         /// 是否有墙
         /// </summary>
         public bool hasWall = true;
+
         /// <summary>
         /// 墙的类型
         /// </summary>
         public WallType type = WallType.None;
+
         /// <summary>
         /// 状态
         /// </summary>
@@ -54,21 +57,25 @@ namespace MazeCSharpTest
             this.type = type;
             this.flag = flag;
         }
+
         public override string ToString()
         {
             return "[WallInfo:x=" + x + " y=" + y + " hasWall=" + hasWall + " type=" + type + " flag=" + flag + "]";
         }
     }
+
     public class Maze
     {
         /// <summary>
         /// 迷宫宽
         /// </summary>
         public int _x { get; private set; }
+
         /// <summary>
         /// 迷宫高
         /// </summary>
         public int _y { get; private set; }
+
         /// <summary>
         /// 随机数种子
         /// </summary>
@@ -80,9 +87,9 @@ namespace MazeCSharpTest
             _y = 0;
             _randSeed = 0;
         }
+
         ~Maze()
         {
-
         }
 
         /// <summary>
@@ -95,6 +102,7 @@ namespace MazeCSharpTest
                 return _maze.Count;
             }
         }
+
         /// <summary>
         /// 获取墙的序号
         /// </summary>
@@ -104,6 +112,7 @@ namespace MazeCSharpTest
         {
             return info.x + info.y * _x;
         }
+
         /// <summary>
         /// 获取指定节点的序号
         /// </summary>
@@ -114,7 +123,7 @@ namespace MazeCSharpTest
         {
             return x + y * _x;
         }
-        
+
         /// <summary>
         /// 创建迷宫
         /// </summary>
@@ -150,6 +159,7 @@ namespace MazeCSharpTest
             UpdateType();
             return true;
         }
+
         /// <summary>
         /// 创建迷宫
         /// </summary>
@@ -160,6 +170,7 @@ namespace MazeCSharpTest
         {
             return Create(w, h, _randSeed);
         }
+
         /// <summary>
         /// 获取指定迷宫墙信息
         /// </summary>
@@ -185,6 +196,7 @@ namespace MazeCSharpTest
                 }
             }
         }
+
         /// <summary>
         /// 获取指定序号墙信息
         /// </summary>
@@ -209,6 +221,7 @@ namespace MazeCSharpTest
                 _maze[index] = value;
             }
         }
+
         /// <summary>
         /// 使用A*寻路查找路径
         /// </summary>
@@ -221,7 +234,9 @@ namespace MazeCSharpTest
         }
 
         #region Other Tool Function
+
 #if !OtherTool
+
         public string SelectWall(WallInfo info)
         {
             if (info.flag == 1)
@@ -235,51 +250,67 @@ namespace MazeCSharpTest
                 case WallType.None:
                     ch = "  ";
                     break;
+
                 case WallType.Up:
                     ch = "│";
                     break;
+
                 case WallType.Down:
                     ch = "│";
                     break;
+
                 case WallType.Left:
                     ch = "─";
                     break;
+
                 case WallType.Right:
                     ch = "─";
                     break;
+
                 case WallType.UpDown:
                     ch = "│";
                     break;
+
                 case WallType.LeftRight:
                     ch = "─";
                     break;
+
                 case WallType.LeftUp:
                     ch = "┘";
                     break;
+
                 case WallType.LeftDown:
                     ch = "┐";
                     break;
+
                 case WallType.RightUp:
                     ch = "└";
                     break;
+
                 case WallType.RightDown:
                     ch = "┌";
                     break;
+
                 case WallType.LeftUpRight:
                     ch = "┴";
                     break;
+
                 case WallType.UpRightDown:
                     ch = "├";
                     break;
+
                 case WallType.RigthDownLeft:
                     ch = "┬";
                     break;
+
                 case WallType.DownLeftUp:
                     ch = "┤";
                     break;
+
                 case WallType.LeftUpRightDown:
                     ch = "┼";
                     break;
+
                 default:
                     ch = string.Empty;
                     break;
@@ -287,6 +318,7 @@ namespace MazeCSharpTest
 
             return ch;
         }
+
         public string SelectWall(int x, int y)
         {
             if (x > _x - 1 || x < 0 ||
@@ -296,13 +328,18 @@ namespace MazeCSharpTest
             }
             return SelectWall(GetWallInfo(x, y));
         }
+
 #endif
-        #endregion
+
+        #endregion Other Tool Function
+
         #region Private
+
         private class BlockWallInfo
         {
             public WallInfo info { get; private set; }
             public WallType wallDirect { get; private set; }
+
             public BlockWallInfo(WallInfo info, WallType wallDirect)
             {
                 this.info = info;
@@ -314,6 +351,7 @@ namespace MazeCSharpTest
                 return "[BlockWallInfo:wallDirect=" + wallDirect + " info=" + info + "]";
             }
         }
+
         private Random _rand;
         private List<WallInfo> _maze = new List<WallInfo>();
         private AStarFindPath _findPath = new AStarFindPath();
@@ -413,14 +451,17 @@ namespace MazeCSharpTest
                         nTarX = tempBlackWall.info.x;
                         nTarY = tempBlackWall.info.y + 1;
                         break;
+
                     case WallType.Down:
                         nTarX = tempBlackWall.info.x;
                         nTarY = tempBlackWall.info.y - 1;
                         break;
+
                     case WallType.Left:
                         nTarX = tempBlackWall.info.x - 1;
                         nTarY = tempBlackWall.info.y;
                         break;
+
                     case WallType.Right:
                         nTarX = tempBlackWall.info.x + 1;
                         nTarY = tempBlackWall.info.y;
@@ -495,6 +536,7 @@ namespace MazeCSharpTest
                 tempBlackWall = null;
             }
         }
+
         private WallInfo GetWallInfo(int x, int y)
         {
             if (x < 0 || x > _x ||
@@ -511,6 +553,7 @@ namespace MazeCSharpTest
 
             return _maze[index];
         }
+
         private void UpdateType()
         {
             for (int y = 0; y < _y; y++)
@@ -550,7 +593,8 @@ namespace MazeCSharpTest
                 }
             }
         }
-        #endregion
+
+        #endregion Private
     }
 
     public class AStarFindPath
@@ -562,6 +606,7 @@ namespace MazeCSharpTest
             public int valDis { get; set; }
             public int valSum { get { return valDis + valSrc; } }
             public Node parent { get; set; }
+
             public Node(WallInfo info)
             {
                 this.wallInfo = info;
@@ -570,6 +615,7 @@ namespace MazeCSharpTest
                 this.valSrc = 0;
                 this.parent = null;
             }
+
             public Node() : this(null)
             {
             }
@@ -637,7 +683,7 @@ namespace MazeCSharpTest
                 {
                     for (y = -1; y <= 1; y++)
                     {
-                        if (x == 0 && y ==0)
+                        if (x == 0 && y == 0)
                         {//不访问自身节点
                             continue;
                         }
@@ -650,7 +696,7 @@ namespace MazeCSharpTest
                         //获取周边节点实例
                         tempNode = _nodeList[maze.GetIndex(currentNode.wallInfo.x + x, currentNode.wallInfo.y + y)];
 
-                        if(tempNode.wallInfo.hasWall || closeNode.Contains(tempNode))
+                        if (tempNode.wallInfo.hasWall || closeNode.Contains(tempNode))
                         {//当节点为墙或已在已访问列表中时，跳出当前循环
                             continue;
                         }
@@ -681,10 +727,12 @@ namespace MazeCSharpTest
         }
 
         #region Privite
+
         /// <summary>
         /// 迷宫数据扩展后得到的寻路节点列表
         /// </summary>
         private List<Node> _nodeList = new List<Node>();
+
         /// <summary>
         /// 初始化寻路节点列表
         /// </summary>
@@ -711,6 +759,7 @@ namespace MazeCSharpTest
                 _nodeList[index].wallInfo = maze[index];
             }
         }
+
         /// <summary>
         /// 清理寻路节点列表
         /// </summary>
@@ -724,6 +773,7 @@ namespace MazeCSharpTest
                 item.valSrc = 0;
             }
         }
+
         private List<WallInfo> GenericPath(Node startNode, Node endNode)
         {
             List<WallInfo> path = new List<WallInfo>();
@@ -741,6 +791,7 @@ namespace MazeCSharpTest
             ClearList();//清理列表
             return path;
         }
+
         /// <summary>
         /// 获取两个节点之间的权值
         /// </summary>
@@ -761,12 +812,13 @@ namespace MazeCSharpTest
                 return cntX * 14 + (cntY - cntX) * 10;
             }
         }
-        #endregion
+
+        #endregion Privite
     }
 
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();//监视函数执行时间
             Maze maze = new Maze();
@@ -808,7 +860,6 @@ namespace MazeCSharpTest
                         Console.WriteLine("seed 输入错误！例：1");
                         continue;
                     }
-
                 }
 
                 stopwatch.Start();
@@ -857,9 +908,7 @@ namespace MazeCSharpTest
 
                 string msg = String.Format("x = {0} y = {1} seed = {2} Create Time(ms) > {3} Find Time(ms) > {4}", x, y, seed, createTime, findTime);
                 Console.WriteLine(msg);
-
             } while (true);
-
         }
     }
 }
