@@ -40,6 +40,11 @@ namespace MazeCSharpTest
         public bool hasWall = true;
 
         /// <summary>
+        /// 是否是寻路路径点
+        /// </summary>
+        public bool isFindRoad = false;
+
+        /// <summary>
         /// 墙的类型
         /// </summary>
         public WallType type = WallType.None;
@@ -49,13 +54,14 @@ namespace MazeCSharpTest
         /// </summary>
         public int flag = 0;
 
-        public void Set(int x, int y, bool hasWall = true, int flag = 0, WallType type = WallType.None)
+        public void Set(int x, int y, bool hasWall = true, int flag = 0, bool isFindRoad = false, WallType type = WallType.None)
         {
             this.x = x;
             this.y = y;
             this.hasWall = hasWall;
             this.type = type;
             this.flag = flag;
+            this.isFindRoad = isFindRoad;
         }
 
         public override string ToString()
@@ -239,7 +245,7 @@ namespace MazeCSharpTest
 
         public string SelectWall(WallInfo info)
         {
-            if (info.flag == 1)
+            if (info.isFindRoad)
             {//为查找的路径
                 return "●";
             }
@@ -756,6 +762,7 @@ namespace MazeCSharpTest
 
             for (int index = 0, length = _nodeList.Count; index < length; index++)
             {
+                maze[index].isFindRoad = false;//初始化状态下均为false，即未寻找路径
                 _nodeList[index].wallInfo = maze[index];
             }
         }
@@ -781,6 +788,7 @@ namespace MazeCSharpTest
             Node temp = endNode;
             while (temp != startNode)
             {//由后向前遍历链表
+                temp.wallInfo.isFindRoad = true;//为寻找到的路径
                 path.Add(temp.wallInfo);
                 temp = temp.parent;
             }
@@ -897,13 +905,6 @@ namespace MazeCSharpTest
                     stopwatch.Stop();//结束计时
                     findTime = stopwatch.Elapsed.TotalMilliseconds;
                     stopwatch.Reset();
-                    if (path != null)
-                    {
-                        foreach (var item in path)
-                        {
-                            item.flag = 1;//设置为路径的节点标识符
-                        }
-                    }
 
                     #region 显示迷宫
 
