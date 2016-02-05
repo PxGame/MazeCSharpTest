@@ -131,6 +131,17 @@ namespace MazeCSharpTest
         }
 
         /// <summary>
+        /// 获取墙列表
+        /// </summary>
+        public List<WallInfo> wallList
+        {
+            get
+            {
+                return this._maze;
+            }
+        }
+
+        /// <summary>
         /// 创建迷宫
         /// </summary>
         /// <param name="w">宽（>0）</param>
@@ -638,7 +649,7 @@ namespace MazeCSharpTest
         /// <param name="maze"></param>
         /// <param name="wStart"></param>
         /// <param name="wStop"></param>
-        /// <param name="bMode"></param>
+        /// <param name="bMode">是否访问斜对角节点</param>
         /// <returns></returns>
         public List<WallInfo> FindPath(Maze maze, WallInfo wStart, WallInfo wStop, bool bMode = false)
         {
@@ -694,7 +705,7 @@ namespace MazeCSharpTest
                             continue;
                         }
 
-                        if (!bMode && x == y)
+                        if (!bMode && Math.Abs(x + y) != 1)
                         {//不访问斜对角节点
                             continue;
                         }
@@ -906,19 +917,26 @@ namespace MazeCSharpTest
                     findTime = stopwatch.Elapsed.TotalMilliseconds;
                     stopwatch.Reset();
 
-                    #region 显示迷宫
-
-                    for (int h = maze._y - 1; h >= 0; h--)
+                    if (path != null)
                     {
-                        for (int w = 0; w < maze._x; w++)
+                        #region 显示迷宫
+
+                        for (int h = maze._y - 1; h >= 0; h--)
                         {
-                            Console.Write(maze.SelectWall(w, h));
+                            for (int w = 0; w < maze._x; w++)
+                            {
+                                Console.Write(maze.SelectWall(w, h));
+                            }
+                            Console.WriteLine();
                         }
                         Console.WriteLine();
-                    }
-                    Console.WriteLine();
 
-                    #endregion 显示迷宫
+                        #endregion 显示迷宫
+                    }
+                    else
+                    {
+                        Console.WriteLine("Not Find Path !");
+                    }
                 }
 
                 //显示相关数据
