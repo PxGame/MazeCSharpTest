@@ -240,7 +240,7 @@ namespace MazeCSharpTest
         public string SelectWall(WallInfo info)
         {
             if (info.flag == 1)
-            {
+            {//为查找的路径
                 return "●";
             }
 
@@ -387,7 +387,7 @@ namespace MazeCSharpTest
         /// </summary>
         private void RandomPrim()
         {
-            //墙极限
+            //墙数组下标极限
             int nWidthLimit = _x - 2;
             int nHeightLimit = _y - 2;
 
@@ -821,10 +821,12 @@ namespace MazeCSharpTest
         private static void Main(string[] args)
         {
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();//监视函数执行时间
-            Maze maze = new Maze();
+            Maze maze = new Maze();//初始化
             int x, y;
             do
             {
+                #region 获取设置
+
                 Console.Write("请输入迷宫宽和高，可选是否显示结果及随机数种子\n（空格分开，例：3 3 true 1， 即3行3列显示迷宫路径且随机数种子为1）：");
                 string[] arg = Console.ReadLine().Split(' ');
                 if (arg.Length < 2)
@@ -862,11 +864,16 @@ namespace MazeCSharpTest
                     }
                 }
 
-                stopwatch.Start();
+                #endregion 获取设置
+
+                stopwatch.Start();//开始计时
+                //创建迷宫
                 maze.Create(x, y, seed);
-                stopwatch.Stop();
+                stopwatch.Stop();//结束计时
                 double createTime = stopwatch.Elapsed.TotalMilliseconds;
                 stopwatch.Reset();
+
+                #region 显示迷宫
 
                 for (int h = maze._y - 1; h >= 0; h--)
                 {
@@ -878,22 +885,27 @@ namespace MazeCSharpTest
                 }
                 Console.WriteLine();
 
+                #endregion 显示迷宫
+
                 double findTime = 0;
                 if (findPath)
                 {
                     List<WallInfo> path = null;
-                    stopwatch.Start();
+                    stopwatch.Start();//开始计时
+                    //寻路
                     path = maze.FindPath(maze[1, 1], maze[maze._x - 2, maze._y - 2]);
-                    stopwatch.Stop();
+                    stopwatch.Stop();//结束计时
                     findTime = stopwatch.Elapsed.TotalMilliseconds;
                     stopwatch.Reset();
                     if (path != null)
                     {
                         foreach (var item in path)
                         {
-                            item.flag = 1;
+                            item.flag = 1;//设置为路径的节点标识符
                         }
                     }
+
+                    #region 显示迷宫
 
                     for (int h = maze._y - 1; h >= 0; h--)
                     {
@@ -904,8 +916,11 @@ namespace MazeCSharpTest
                         Console.WriteLine();
                     }
                     Console.WriteLine();
+
+                    #endregion 显示迷宫
                 }
 
+                //显示相关数据
                 string msg = String.Format("x = {0} y = {1} seed = {2} Create Time(ms) > {3} Find Time(ms) > {4}", x, y, seed, createTime, findTime);
                 Console.WriteLine(msg);
             } while (true);
