@@ -4,6 +4,9 @@ using Random = System.Random;
 
 namespace MazeCSharpTest
 {
+    /// <summary>
+    /// 墙类型枚举
+    /// </summary>
     public enum WallType
     {
         None = 0,
@@ -29,6 +32,9 @@ namespace MazeCSharpTest
         LeftUpRightDown = 15
     }
 
+    /// <summary>
+    /// 墙信息
+    /// </summary>
     public class WallInfo
     {
         public int x = -1;
@@ -70,6 +76,9 @@ namespace MazeCSharpTest
         }
     }
 
+    /// <summary>
+    /// 迷宫生成类
+    /// </summary>
     public class Maze
     {
         /// <summary>
@@ -244,10 +253,11 @@ namespace MazeCSharpTest
         /// </summary>
         /// <param name="start"></param>
         /// <param name="end"></param>
+        /// <param name="bMode">是否走斜线</param>
         /// <returns></returns>
-        public List<WallInfo> FindPath(WallInfo start, WallInfo end)
+        public List<WallInfo> FindPath(WallInfo start, WallInfo end, bool bMode = false)
         {
-            return _findPath.FindPath(this, start, end);
+            return _findPath.FindPath(this, start, end, bMode);
         }
 
         #region Other Tool Function
@@ -352,9 +362,16 @@ namespace MazeCSharpTest
 
         #region Private
 
+        /// <summary>
+        /// 迷宫生成用墙信息
+        /// </summary>
         private class BlockWallInfo
         {
             public WallInfo info { get; private set; }
+
+            /// <summary>
+            /// 相对的对面的点的方向
+            /// </summary>
             public WallType wallDirect { get; private set; }
 
             public BlockWallInfo(WallInfo info, WallType wallDirect)
@@ -381,7 +398,7 @@ namespace MazeCSharpTest
                 while (nLerp > 0)
                 {
                     _maze.Add(new WallInfo());
-                    nLerp--;
+                    --nLerp;
                 }
             }
             else if (nLerp < 0)
@@ -571,6 +588,9 @@ namespace MazeCSharpTest
             return _maze[index];
         }
 
+        /// <summary>
+        /// 更新墙的类型信息
+        /// </summary>
         private void UpdateType()
         {
             for (int y = 0; y < _y; y++)
@@ -614,14 +634,35 @@ namespace MazeCSharpTest
         #endregion Private
     }
 
+    /// <summary>
+    /// 寻路算法
+    /// </summary>
     public class AStarFindPath
     {
+        /// <summary>
+        /// 寻路用节点
+        /// </summary>
         public class Node
         {
+            /// <summary>
+            /// 节点信息
+            /// </summary>
             public WallInfo wallInfo { get; set; }
+            /// <summary>
+            /// 距离起点的权值
+            /// </summary>
             public int valSrc { get; set; }
+            /// <summary>
+            /// 距离终点的权值
+            /// </summary>
             public int valDis { get; set; }
+            /// <summary>
+            /// 权值总和
+            /// </summary>
             public int valSum { get { return valDis + valSrc; } }
+            /// <summary>
+            /// 父节点
+            /// </summary>
             public Node parent { get; set; }
 
             public Node(WallInfo info)
@@ -721,13 +762,14 @@ namespace MazeCSharpTest
                         //计算当前结点到startNode的权值
                         int nValSrc = currentNode.valSrc + GetNodeDistance(currentNode, tempNode);
 
-                        if (!openNode.Contains(tempNode) || nValSrc < tempNode.valSrc)
+                        bool hasNode = openNode.Contains(tempNode);//是否存在于未检查列表中
+                        if (!hasNode || nValSrc < tempNode.valSrc)
                         {//如果不在未检测列表中或距离起点更近
                             tempNode.valSrc = nValSrc;//更新权值
                             tempNode.valDis = GetNodeDistance(endNode, tempNode);//更新权值
                             tempNode.parent = currentNode;//设置父节点
 
-                            if (!openNode.Contains(tempNode))
+                            if (!hasNode)
                             {//如果没有在检测列表中
                                 openNode.Add(tempNode);
                             }
@@ -738,8 +780,7 @@ namespace MazeCSharpTest
                 currentNode = null;
                 tempNode = null;
             }
-
-            ClearList();//清理列表
+            
             return null;
         }
 
@@ -757,6 +798,7 @@ namespace MazeCSharpTest
         private void InitList(Maze maze)
         {
             int nLerp = maze.Count - _nodeList.Count;
+
             if (nLerp > 0)
             {
                 while (nLerp > 0)
@@ -771,27 +813,23 @@ namespace MazeCSharpTest
                 _nodeList.RemoveRange(0, -nLerp);
             }
 
+            //初始化
             for (int index = 0, length = _nodeList.Count; index < length; index++)
             {
                 maze[index].isFindRoad = false;//初始化状态下均为false，即未寻找路径
                 _nodeList[index].wallInfo = maze[index];
+                _nodeList[index].parent = null;
+                _nodeList[index].valDis = 0;
+                _nodeList[index].valSrc = 0;
             }
         }
 
         /// <summary>
-        /// 清理寻路节点列表
+        /// 生成路径，并反向
         /// </summary>
-        private void ClearList()
-        {
-            foreach (var item in _nodeList)
-            {
-                item.parent = null;
-                item.wallInfo = null;
-                item.valDis = 0;
-                item.valSrc = 0;
-            }
-        }
-
+        /// <param name="startNode">开始节点</param>
+        /// <param name="endNode">结束节点</param>
+        /// <returns>路径列表</returns>
         private List<WallInfo> GenericPath(Node startNode, Node endNode)
         {
             List<WallInfo> path = new List<WallInfo>();
@@ -806,8 +844,7 @@ namespace MazeCSharpTest
 
             //反转列表
             path.Reverse();
-
-            ClearList();//清理列表
+            
             return path;
         }
 
@@ -822,6 +859,7 @@ namespace MazeCSharpTest
             int cntX = Math.Abs(currentNode.wallInfo.x - tempNode.wallInfo.x);
             int cntY = Math.Abs(currentNode.wallInfo.y - tempNode.wallInfo.y);
 
+            //横竖方向的权值为10，斜向的权值为14。
             if (cntX > cntY)
             {
                 return cntY * 14 + (cntX - cntY) * 10;
@@ -912,7 +950,7 @@ namespace MazeCSharpTest
                     List<WallInfo> path = null;
                     stopwatch.Start();//开始计时
                     //寻路
-                    path = maze.FindPath(maze[1, 1], maze[maze._x - 2, maze._y - 2]);
+                    path = maze.FindPath(maze[1, 1], maze[maze._x - 2, maze._y - 2], true);
                     stopwatch.Stop();//结束计时
                     findTime = stopwatch.Elapsed.TotalMilliseconds;
                     stopwatch.Reset();
