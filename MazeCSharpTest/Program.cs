@@ -648,18 +648,22 @@ namespace MazeCSharpTest
             /// 节点信息
             /// </summary>
             public WallInfo wallInfo { get; set; }
+
             /// <summary>
             /// 距离起点的权值
             /// </summary>
             public int valSrc { get; set; }
+
             /// <summary>
             /// 距离终点的权值
             /// </summary>
             public int valDis { get; set; }
+
             /// <summary>
             /// 权值总和
             /// </summary>
             public int valSum { get { return valDis + valSrc; } }
+
             /// <summary>
             /// 父节点
             /// </summary>
@@ -780,7 +784,7 @@ namespace MazeCSharpTest
                 currentNode = null;
                 tempNode = null;
             }
-            
+
             return null;
         }
 
@@ -844,7 +848,7 @@ namespace MazeCSharpTest
 
             //反转列表
             path.Reverse();
-            
+
             return path;
         }
 
